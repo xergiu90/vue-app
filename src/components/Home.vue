@@ -2,7 +2,52 @@
     <div class="container-fluid">
         <div class="row h-100">
             <div class="col-md-4 border-right border-dark h-100">
-                <input class="mt-3" id="filter" aria-describedby="filter" placeholder="filter..."  v-model="filter" v-on:input="filterContacts">
+                <div class="filter-group">
+                    <input class="mt-3 w-100" id="filter" aria-describedby="filter" placeholder="filter..."  v-model="filter" v-on:input="filterContacts">
+
+                    <div class="advanced-fitler-group">
+                        <button type="button" class="btn btn-link" v-on:click="clearFilter">clear filter</button>
+                        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#modalFilterCenter">advanced filter</button>
+                    </div>
+
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="modalFilterCenter" tabindex="-1" role="dialog" aria-labelledby="modalFilterTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalFilterTitle">Advanced filter</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body m-5">
+                                    <div class="form-group row">
+                                        <label for="name">Name filter</label>
+                                        <input class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter last name" required  v-model="nameFilter">
+                                        <div class="invalid-feedback">
+                                            Last name is required!
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="groupFilter">Group</label>
+                                        <select id="groupFilter" class="form-control" v-model="groupFilter">
+                                            <option selected value="work">Work</option>
+                                            <option value="friends">Friends</option>
+                                            <option value="family">Family</option>
+                                            <option value="others">Others</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary"  v-on:click="advancedFilterContacts" data-dismiss="modal">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="contact-list">
                     <div class="mt-3" v-for="(value, name) in groupedContacts" v-bind:key="name">
                         <span class="group-letter">{{ name }}</span>
@@ -174,6 +219,8 @@ export default {
             filter:null,
             lastName:null,
             firstName:null,
+            nameFilter:'',
+            groupFilter:"work",
             group:"work",
             groupedContacts: this.getContacts(contacts),
             contacts: contacts,
@@ -184,6 +231,7 @@ export default {
         getContacts(contacts) {
             const groupContacts={};
 
+            contacts.sort((a,b) => (a.firstName > b.firstName) ? 1 : ((b.firstName > a.firstName) ? -1 : 0));
             contacts.forEach(
                 (el) => {
                     if (groupContacts[el.firstName.charAt(0)]){
@@ -231,8 +279,13 @@ export default {
             } else {
                 this.groupedContacts = this.getContacts(this.contacts.filter(contact => (contact.firstName.toLowerCase().includes(this.filter.toLowerCase()) || contact.lastName.toLowerCase().includes(this.filter.toLowerCase()))));
             }
+        },
+        advancedFilterContacts() {
+            this.groupedContacts = this.getContacts(this.contacts.filter(contact => ((contact.firstName.toLowerCase().includes(this.nameFilter.toLowerCase()) || contact.lastName.toLowerCase().includes(this.nameFilter.toLowerCase())) && contact.group === this.groupFilter)));
+        },
+        clearFilter(){
+            this.groupedContacts = this.getContacts(this.contacts);
         }
-
     }
 
 }
